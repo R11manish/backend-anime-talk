@@ -23,7 +23,6 @@ router.post(
   "/verify-otp",
   asyncHandler(async (req: Request, res: Response) => {
     const { email, otp } = req.body;
-    console.log(req.body);
     const result = await otpService.verifyOTP(email, otp);
     res.status(200).json({ api_key: result.api_key });
   })

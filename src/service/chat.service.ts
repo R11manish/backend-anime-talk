@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { Messages } from "../types/chat.type";
 import { SYSTEM_PROMPT } from "../constant/prompt";
 import { userInfo } from "../types/user.type";
+import "dotenv/config";
 
 export class ChatWithCharacters {
   private client: OpenAI;
@@ -9,12 +10,13 @@ export class ChatWithCharacters {
   constructor() {
     this.client = new OpenAI({
       baseURL: "https://api.deepseek.com/v1",
-      apiKey: "sk-7a4798f9e9c244f588f4f83be4b92ba4",
+      apiKey: process.env.DEEPSEEK_API,
     });
   }
 
   async sendMessage(users_details: userInfo, userMessages: Array<Messages>) {
     const completion = await this.client.chat.completions.create({
+      temperature: 1.3,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {

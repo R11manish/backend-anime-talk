@@ -48,6 +48,7 @@ export class OTPService {
 
   async sendOtp(user: User): Promise<void> {
     const vuser = userSchema.parse(user);
+    
     const otp = this.generateOTP(this.otpLength);
 
     const existingUser = await this.dbClient.send(
@@ -99,7 +100,6 @@ export class OTPService {
   }
 
   async verifyOTP(email: string, otp: string): Promise<VerifyOTPResult> {
-    const verifyEmail = userSchema.pick({ email: true });
 
     const userRecord = await this.dbClient.send(
       new GetItemCommand({

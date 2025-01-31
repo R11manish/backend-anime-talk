@@ -4,10 +4,21 @@ import logger from "./utlis/logger";
 import { errorHandler } from "./middleware/error.middleware";
 import { apiKeyMiddleware } from "./middleware/auth.middleware";
 import otpRoutes from "./routes/otp.routes";
+import chatRoutes from "./routes/chat.routes";
+import { CorsOptions } from "cors";
+import cors from "cors";
+
 require("dotenv").config();
 
-
 const app = express();
+
+const corsOptions: CorsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization" , "x-api-key"],
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -21,9 +32,7 @@ app.get("/verify", apiKeyMiddleware, (req, res) => {
   res.json({ valid: true, email: req.user?.email });
 });
 
-app.post("/chat", apiKeyMiddleware, (req, res) => {
-  res.status(200).json({ status: "working" });
-});
+app.use("/chat", apiKeyMiddleware, chatRoutes);
 
 app.use(errorHandler);
 
