@@ -1,14 +1,18 @@
 import { createHmac } from "crypto";
 import { timingSafeEqual } from "crypto";
+import "dotenv/config";
 
 export class ApiKeyService {
-  private readonly SECRET_KEY = process.env.API_KEY_SECRET!;
+  private readonly SECRET_KEY;
 
-  generateApiKey(email: string): string {
+  constructor() {
     if (!process.env.API_KEY_SECRET) {
       throw new Error("API_KEY_SECRET is required");
     }
+    this.SECRET_KEY = process.env.API_KEY_SECRET;
+  }
 
+  generateApiKey(email: string): string {
     const hmac = createHmac("sha256", this.SECRET_KEY)
       .update(email)
       .digest("hex");
@@ -34,7 +38,8 @@ export class ApiKeyService {
       const isValid =
         signatureBuffer.length === expectedBuffer.length &&
         timingSafeEqual(signatureBuffer, expectedBuffer);
-      return { isValid };
+
+      return { isValid, email };
     } catch (error) {
       return { isValid: false };
     }

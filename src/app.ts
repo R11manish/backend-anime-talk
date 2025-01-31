@@ -4,6 +4,8 @@ import logger from "./utlis/logger";
 import { errorHandler } from "./middleware/error.middleware";
 import { apiKeyMiddleware } from "./middleware/auth.middleware";
 import otpRoutes from "./routes/otp.routes";
+require("dotenv").config();
+
 
 const app = express();
 
@@ -19,7 +21,10 @@ app.get("/verify", apiKeyMiddleware, (req, res) => {
   res.json({ valid: true, email: req.user?.email });
 });
 
-// Error handler
+app.post("/chat", apiKeyMiddleware, (req, res) => {
+  res.status(200).json({ status: "working" });
+});
+
 app.use(errorHandler);
 
 export const handler = serverless(app);

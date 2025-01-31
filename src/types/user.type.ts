@@ -6,6 +6,12 @@ export enum UserStatus {
   PENDING = "PENDING",
 }
 
+export type userInfo = {
+  name: string;
+  gender: string;
+  character_name: string;
+  char_desc: string;
+};
 
 export const userSchema = z.object({
   name: z
