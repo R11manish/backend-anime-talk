@@ -5,6 +5,7 @@ import { errorHandler } from "./middleware/error.middleware";
 import { apiKeyMiddleware } from "./middleware/auth.middleware";
 import otpRoutes from "./routes/otp.routes";
 import chatRoutes from "./routes/chat.routes";
+import charRoutes from "./routes/characters.routes";
 import { CorsOptions } from "cors";
 import cors from "cors";
 
@@ -15,7 +16,7 @@ const app = express();
 const corsOptions: CorsOptions = {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization" , "x-api-key"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
 };
 
 app.use(cors(corsOptions));
@@ -33,6 +34,7 @@ app.get("/verify", apiKeyMiddleware, (req, res) => {
 });
 
 app.use("/chat", apiKeyMiddleware, chatRoutes);
+app.use("/characters", charRoutes);
 
 app.use(errorHandler);
 

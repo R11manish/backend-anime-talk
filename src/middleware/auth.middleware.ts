@@ -7,6 +7,7 @@ declare global {
     interface Request {
       user?: {
         email: string;
+        key: string;
       };
     }
   }
@@ -28,7 +29,7 @@ export const apiKeyMiddleware = (
   try {
     const validation = apiKeyService.validateApiKey(key);
     if (validation.isValid && validation.email) {
-      req.user = { email: validation.email };
+      req.user = { email: validation.email, key: key };
       next();
     } else {
       throw new AppError(401, "Invalid API key");

@@ -29,7 +29,7 @@ export class OTPService {
   private TABLE_NAME = "users_details";
 
   constructor({ length = 6, expiryMinutes = 10 }: OTPServiceConfig = {}) {
-    if (!process.env.AWS_REGION) {
+    if (!process.env.CUSTOM_AWS_REGION) {
       throw new Error("AWS_REGION is not configured");
     }
 
@@ -48,7 +48,7 @@ export class OTPService {
 
   async sendOtp(user: User): Promise<void> {
     const vuser = userSchema.parse(user);
-    
+
     const otp = this.generateOTP(this.otpLength);
 
     const existingUser = await this.dbClient.send(
@@ -100,7 +100,6 @@ export class OTPService {
   }
 
   async verifyOTP(email: string, otp: string): Promise<VerifyOTPResult> {
-
     const userRecord = await this.dbClient.send(
       new GetItemCommand({
         TableName: this.TABLE_NAME,

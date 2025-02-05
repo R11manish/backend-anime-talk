@@ -9,8 +9,8 @@ export class ChatWithCharacters {
 
   constructor() {
     this.client = new OpenAI({
-      baseURL: "https://api.deepseek.com/v1",
-      apiKey: process.env.DEEPSEEK_API,
+      baseURL: process.env.LLM_URL,
+      apiKey: process.env.LLM_API,
     });
   }
 
@@ -25,7 +25,7 @@ export class ChatWithCharacters {
         },
         ...userMessages,
       ],
-      model: "deepseek-chat",
+      model: process.env.LLM_MODEL!,
     });
 
     return completion.choices[0].message.content;
