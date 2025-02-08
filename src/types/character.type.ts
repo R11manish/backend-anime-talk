@@ -11,7 +11,7 @@ export const characterSchema = z.object({
     .min(1, "Description is required")
     .max(500, "Description must be 500 characters or less"),
 
-  profileUrl: z.string().url("Invalid URL format"),
+  profileUrl: z.string().url("Invalid URL format").optional(),
 });
 
 export type Character = z.infer<typeof characterSchema>;

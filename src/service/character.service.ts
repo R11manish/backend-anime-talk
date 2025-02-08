@@ -10,6 +10,7 @@ import {
 } from "../types/character.type";
 import { randomUUID } from "crypto";
 import { AppError } from "../middleware/error.middleware";
+import { downloadPicture } from "../utlis/download-image";
 
 export class CharacterService {
   private readonly dbClient: DynamoDBClient;
@@ -27,12 +28,18 @@ export class CharacterService {
 
   async createCharacter(character: CharacterType) {
     const ch = characterSchema.parse(character);
+
     const existingChar = await this.dbClient.send(
       new GetItemCommand({
         TableName: this.TABLE_NAME,
         Key: { name: { S: ch.name } },
       })
     );
+
+    if (!ch.profileUrl) {
+      const { s3_url } = await downloadPicture(ch.name);
+      ch.profileUrl = s3_url;
+    }
 
     if (!existingChar.Item) {
       await this.dbClient.send(
