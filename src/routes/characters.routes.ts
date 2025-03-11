@@ -5,7 +5,7 @@ import { CharacterService } from "../service/character.service";
 const router: Router = Router();
 const charService = new CharacterService();
 
-// TODO: create a admin middleware for this 
+// TODO: create a admin middleware for this
 
 // router.post(
 //   "/create",
@@ -23,7 +23,6 @@ router.get(
     const lastKey = req.query.lastKey
       ? JSON.parse(req.query.lastKey as string)
       : undefined;
-
     const characters = await charService.getAllCharacters(limit, lastKey);
     res.status(200).json({
       data: characters.items,
