@@ -3,6 +3,7 @@ import {
   GetItemCommand,
   PutItemCommand,
   ScanCommand,
+  AttributeValue,
 } from "@aws-sdk/client-dynamodb";
 import {
   characterSchema,
@@ -11,6 +12,24 @@ import {
 import { randomUUID } from "crypto";
 import { AppError } from "../middleware/error.middleware";
 import { downloadPicture } from "../utlis/download-image";
+
+// Define a type for pagination token
+export interface PaginationToken {
+  id?: string;
+  name?: string;
+}
+
+// Define a type for DynamoDB pagination key
+interface DynamoDBPaginationKey {
+  [key: string]: AttributeValue;
+}
+
+// Define a type for paginated response
+export interface PaginatedResponse<T> {
+  items: T[];
+  nextPageToken?: string;
+  count: number;
+}
 
 export class CharacterService {
   private readonly dbClient: DynamoDBClient;
@@ -62,16 +81,56 @@ export class CharacterService {
     }
   }
 
-  async getAllCharacters(limit: number = 10, lastEvaluatedKey?: any) {
+  /**
+   * Encodes a DynamoDB pagination key to a base64 string token
+   */
+  private encodePaginationToken(
+    lastEvaluatedKey?: DynamoDBPaginationKey
+  ): string | undefined {
+    if (!lastEvaluatedKey) return undefined;
+
     try {
+      return Buffer.from(JSON.stringify(lastEvaluatedKey)).toString("base64");
+    } catch (error) {
+      console.error("Failed to encode pagination token:", error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Decodes a base64 string token to a DynamoDB pagination key
+   */
+  private decodePaginationToken(
+    token?: string
+  ): DynamoDBPaginationKey | undefined {
+    if (!token) return undefined;
+
+    try {
+      const decoded = JSON.parse(Buffer.from(token, "base64").toString());
+
+      // Validate the structure of the decoded token
+      if (typeof decoded !== "object" || decoded === null) {
+        throw new Error("Invalid pagination token structure");
+      }
+
+      return decoded;
+    } catch (error) {
+      console.error("Failed to decode pagination token:", error);
+      throw new AppError(400, "Invalid pagination token");
+    }
+  }
+
+  async getAllCharacters(
+    limit: number = 10,
+    pageToken?: string
+  ): Promise<PaginatedResponse<CharacterType>> {
+    try {
+      const exclusiveStartKey = this.decodePaginationToken(pageToken);
+
       const command = {
         TableName: this.TABLE_NAME,
         Limit: limit,
-        FilterExpression: "feature = :featureValue",
-        ExpressionAttributeValues: {
-          ":featureValue": { BOOL: false },
-        },
-        ExclusiveStartKey: lastEvaluatedKey,
+        ExclusiveStartKey: exclusiveStartKey,
       };
 
       const response = await this.dbClient.send(new ScanCommand(command));
@@ -79,21 +138,31 @@ export class CharacterService {
       return {
         items:
           response.Items?.map((item) => ({
-            id: item.id.S,
-            name: item.name.S,
-            description: item.description.S,
-            profileUrl: item.profileUrl.S,
-            feature: item.feature.BOOL,
+            id: item.id.S!,
+            name: item.name.S!,
+            description: item.description.S!,
+            profileUrl: item.profileUrl.S!,
+            feature: item.feature.BOOL!,
           })) || [],
-        lastEvaluatedKey: response.LastEvaluatedKey,
+        nextPageToken: this.encodePaginationToken(response.LastEvaluatedKey),
+        count: response.Items?.length || 0,
       };
     } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error fetching all characters:", error);
       throw new AppError(500, "Failed to fetch characters");
     }
   }
 
-  async getFeatureCharacter(limit: number = 10, lastEvaluatedKey?: any) {
+  async getFeatureCharacter(
+    limit: number = 10,
+    pageToken?: string
+  ): Promise<PaginatedResponse<CharacterType>> {
     try {
+      const exclusiveStartKey = this.decodePaginationToken(pageToken);
+
       const command = {
         TableName: this.TABLE_NAME,
         Limit: limit,
@@ -101,7 +170,7 @@ export class CharacterService {
         ExpressionAttributeValues: {
           ":featureValue": { BOOL: true },
         },
-        ExclusiveStartKey: lastEvaluatedKey,
+        ExclusiveStartKey: exclusiveStartKey,
       };
 
       const response = await this.dbClient.send(new ScanCommand(command));
@@ -109,15 +178,20 @@ export class CharacterService {
       return {
         items:
           response.Items?.map((item) => ({
-            id: item.id.S,
-            name: item.name.S,
-            description: item.description.S,
-            profileUrl: item.profileUrl.S,
-            feature: item.feature.BOOL,
+            id: item.id.S!,
+            name: item.name.S!,
+            description: item.description.S!,
+            profileUrl: item.profileUrl.S!,
+            feature: item.feature.BOOL!,
           })) || [],
-        lastEvaluatedKey: response.LastEvaluatedKey,
+        nextPageToken: this.encodePaginationToken(response.LastEvaluatedKey),
+        count: response.Items?.length || 0,
       };
     } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error("Error fetching featured characters:", error);
       throw new AppError(500, "Failed to fetch featured characters");
     }
   }
