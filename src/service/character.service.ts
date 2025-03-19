@@ -13,18 +13,15 @@ import { randomUUID } from "crypto";
 import { AppError } from "../middleware/error.middleware";
 import { downloadPicture } from "../utlis/download-image";
 
-// Define a type for pagination token
 export interface PaginationToken {
   id?: string;
   name?: string;
 }
 
-// Define a type for DynamoDB pagination key
 interface DynamoDBPaginationKey {
   [key: string]: AttributeValue;
 }
 
-// Define a type for paginated response
 export interface PaginatedResponse<T> {
   items: T[];
   nextPageToken?: string;
@@ -81,9 +78,6 @@ export class CharacterService {
     }
   }
 
-  /**
-   * Encodes a DynamoDB pagination key to a base64 string token
-   */
   private encodePaginationToken(
     lastEvaluatedKey?: DynamoDBPaginationKey
   ): string | undefined {
@@ -97,9 +91,6 @@ export class CharacterService {
     }
   }
 
-  /**
-   * Decodes a base64 string token to a DynamoDB pagination key
-   */
   private decodePaginationToken(
     token?: string
   ): DynamoDBPaginationKey | undefined {
@@ -108,7 +99,6 @@ export class CharacterService {
     try {
       const decoded = JSON.parse(Buffer.from(token, "base64").toString());
 
-      // Validate the structure of the decoded token
       if (typeof decoded !== "object" || decoded === null) {
         throw new Error("Invalid pagination token structure");
       }

@@ -20,9 +20,9 @@ router.get(
   "/all",
   asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 10;
-    const pageToken = req.query.pageToken as string | undefined;
+    const nextPageToken = req.query.nextPageToken as string | undefined;
 
-    const characters = await charService.getAllCharacters(limit, pageToken);
+    const characters = await charService.getAllCharacters(limit, nextPageToken);
     res.status(200).json({
       data: characters.items,
       nextPageToken: characters.nextPageToken,
@@ -35,9 +35,9 @@ router.get(
   "/featured",
   asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 10;
-    const pageToken = req.query.pageToken as string | undefined;
+    const nextPageToken = req.query.nextPageToken as string | undefined;
 
-    const characters = await charService.getFeatureCharacter(limit, pageToken);
+    const characters = await charService.getFeatureCharacter(limit, nextPageToken);
     res.status(200).json({
       data: characters.items,
       nextPageToken: characters.nextPageToken,
