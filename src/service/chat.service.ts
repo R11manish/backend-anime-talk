@@ -17,7 +17,7 @@ export class ChatWithCharacters {
   async sendMessage(users_details: userInfo, userMessages: Array<Messages>) {
     const completion = await this.client.chat.completions.create({
       temperature: 1.3,
-      max_completion_tokens: 60,
+      max_completion_tokens: 90,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {
