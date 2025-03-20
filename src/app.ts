@@ -36,6 +36,14 @@ app.get("/verify", apiKeyMiddleware, (req, res) => {
 app.use("/chat", apiKeyMiddleware, chatRoutes);
 app.use("/characters", charRoutes);
 
+app.get("/ad-settings", (_req, res) => {
+  res.json({
+    adUnitName: "testing",
+    adFormat: "Banner",
+    adUnitId: "ca-app-pub-8083231867045783/2264244837",
+  });
+});
+
 app.use(errorHandler);
 
 export const handler = serverless(app);

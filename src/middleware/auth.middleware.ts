@@ -8,6 +8,7 @@ declare global {
       user?: {
         email: string;
         key: string;
+        isAdmin?: boolean;
       };
     }
   }
@@ -37,4 +38,22 @@ export const apiKeyMiddleware = (
   } catch (error) {
     throw new AppError(500, "Failed to verify API key");
   }
+};
+
+export const adminMiddleware = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  if (!req.user) {
+    throw new AppError(401, "Authentication required");
+  }
+
+  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+  if (!adminEmails.includes(req.user.email)) {
+    throw new AppError(403, "Admin access required");
+  }
+
+  req.user.isAdmin = true;
+  next();
 };
